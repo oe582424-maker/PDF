@@ -417,9 +417,7 @@
             <div class="paper-title" id="previewTitle">Document Sheet</div>
             <div class="paper-sub">DocStudio A4</div>
           </div>
-          <div class="paper-content" id="previewContent">
-            <!-- Text rendered dynamically -->
-          </div>
+          <div class="paper-content" id="previewContent"></div>
         </div>
         <div class="paper-footer">
           <span>Generated via DocStudio</span>
@@ -449,7 +447,7 @@
       document.getElementById('wordCount').innerText = `${words} Words`;
     }
 
-    // OCR Engine (Bengali + English)
+    // Fixed & Simplified OCR Engine
     async function handleImageUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -459,37 +457,39 @@
       const statusText = document.getElementById('statusText');
 
       progressBar.style.display = 'block';
-      statusText.innerText = 'Initializing OCR Engine...';
+      statusText.innerText = 'ফাইল প্রসেস করা হচ্ছে... (প্রথমবার ল্যাঙ্গুয়েজ ফাইল ডাউনলোডে কয়েক সেকেন্ড সময় লাগতে পারে)';
       progressFill.style.width = '10%';
 
       try {
-        const worker = await Tesseract.createWorker(['ben', 'eng']);
-        
-        statusText.innerText = 'Scanning & Processing Document...';
-        
-        const ret = await worker.recognize(file, {}, {
-          logger: m => {
-            if (m.status === 'recognizing text') {
-              const progress = Math.round(m.progress * 100);
-              progressFill.style.width = `${progress}%`;
-              statusText.innerText = `Scanning: ${progress}%`;
+        // Direct method handling Workers and CDN Language Data cleanly
+        const result = await Tesseract.recognize(
+          file,
+          'ben+eng', // Scan both Bengali & English
+          {
+            logger: m => {
+              if (m.status === 'recognizing text') {
+                const progress = Math.round(m.progress * 100);
+                progressFill.style.width = `${progress}%`;
+                statusText.innerText = `স্ক্যান হচ্ছে: ${progress}%`;
+              } else if (m.status) {
+                statusText.innerText = `ধাপ: ${m.status}`;
+              }
             }
           }
-        });
+        );
 
-        document.getElementById('editor').value = ret.data.text;
+        document.getElementById('editor').value = result.data.text;
         updatePreview();
 
-        statusText.innerText = 'Extraction Complete!';
+        statusText.innerText = 'টেক্সট এক্সট্র্যাক্ট সফল হয়েছে!';
         setTimeout(() => {
           progressBar.style.display = 'none';
           statusText.innerText = '';
         }, 2000);
 
-        await worker.terminate();
       } catch (err) {
-        console.error(err);
-        statusText.innerText = 'OCR Error. Please try another image.';
+        console.error("OCR Error:", err);
+        statusText.innerText = 'OCR প্রসেসিংয়ে সমস্যা হয়েছে। ইন্টারনেট বা ফাইল চেক করুন।';
       }
     }
 
