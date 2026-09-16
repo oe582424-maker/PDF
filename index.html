@@ -3,59 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mashruba..PDF - Image to PDF & OCR App</title>
-    <!-- Tailwind CSS UI styling -->
+    <title>Mashruba..PDF - Bangla & English OCR to PDF</title>
+
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- jsPDF Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- Tesseract.js (Bangla & English OCR) -->
+
+    <!-- Google Fonts: Noto Sans Bengali (বাংলা যুক্তাক্ষর সঠিক দেখানোর জন্য) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tesseract.js Engine -->
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+    <!-- html2pdf.js Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     <style>
-        .drag-over { border-color: #3b82f6; background-color: #eff6ff; }
+        body, .bangla-font {
+            font-family: 'Noto Sans Bengali', sans-serif;
+        }
+        .drag-over {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+        }
     </style>
 </head>
-<body class="bg-gray-100 min-h-screen font-sans text-gray-800">
+<body class="bg-gray-100 min-h-screen text-gray-800">
 
     <!-- Header -->
     <header class="bg-blue-600 text-white py-4 shadow-md">
         <div class="max-w-4xl mx-auto px-4 flex justify-between items-center">
             <h1 class="text-2xl font-bold tracking-wide">Mashruba..PDF</h1>
-            <span class="text-xs bg-blue-800 px-3 py-1 rounded-full border border-blue-400">🔒 100% Client-Side / Secure</span>
+            <span class="text-xs bg-blue-800 px-3 py-1 rounded-full border border-blue-400">⚡ OCR Text to PDF</span>
         </div>
     </header>
 
     <!-- Main Container -->
     <main class="max-w-4xl mx-auto p-4 mt-6">
         
-        <!-- App Card -->
+        <!-- Upload Card -->
         <div class="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <h2 class="text-xl font-semibold mb-2">ছবি নির্বাচন করুন (সর্বোচ্চ ২০ টি পেজ)</h2>
-            <p class="text-sm text-gray-500 mb-4">বাংলা বা ইংরেজি লেখার ছবি আপলোড করে মুহূর্তেই PDF তৈরি করুন।</p>
+            <h2 class="text-xl font-semibold mb-1">ছবি থেকে বাংলা ও ইংরেজি লেখা বের করুন</h2>
+            <p class="text-sm text-gray-500 mb-4">আপনার ছবি নির্বাচন করুন (সর্বোচ্চ ২০ টি পেজ)।</p>
 
             <!-- File Upload Box -->
             <div id="dropZone" class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 transition duration-200">
                 <svg class="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                 </svg>
                 <p class="text-gray-700 font-medium">এখানে ছবি ড্রাগ করুন অথবা <span class="text-blue-600 underline">ব্রাউজ করুন</span></p>
-                <p class="text-xs text-gray-400 mt-1">সর্বোচ্চ ২০ টি ছবি একসাথে নির্বাচন করা যাবে</p>
+                <p class="text-xs text-gray-400 mt-1">সর্বোচ্চ ২০ টি ছবি একসাথে প্রসেস করা যাবে</p>
                 <input type="file" id="imageInput" multiple accept="image/*" class="hidden">
             </div>
 
-            <!-- Controls & Options -->
-            <div class="mt-6 flex flex-wrap gap-4 items-center justify-between border-t pt-4">
-                <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">PDF মোড সিলেক্ট করুন:</label>
-                    <select id="pdfMode" class="border rounded-md px-3 py-2 text-sm bg-gray-50">
-                        <option value="image">Direct Image PDF (ইনস্ট্যান্ট ও অরিজিনাল লুক)</option>
-                        <option value="ocr">Bangla + English OCR Text PDF (লেখা বের করে PDF)</option>
-                    </select>
-                </div>
-
-                <div class="flex gap-2">
-                    <button id="clearBtn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-semibold hover:bg-gray-300 hidden">মুছে ফেলুন</button>
-                    <button id="generatePdfBtn" disabled class="bg-blue-600 text-white px-6 py-2 rounded-md text-sm font-semibold hover:bg-blue-700 opacity-50 cursor-not-allowed">PDF ডাউনলোড করুন</button>
-                </div>
+            <!-- Control Buttons -->
+            <div class="mt-6 flex justify-end gap-3 border-t pt-4">
+                <button id="clearBtn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm font-semibold hover:bg-gray-300 hidden">সব মুছুন</button>
+                <button id="extractBtn" disabled class="bg-blue-600 text-white px-6 py-2 rounded-md text-sm font-semibold hover:bg-blue-700 opacity-50 cursor-not-allowed">লেখা বের করুন ও PDF বানান</button>
             </div>
         </div>
 
@@ -70,9 +75,24 @@
             </div>
         </div>
 
-        <!-- Image Previews Container -->
+        <!-- Previews -->
         <div id="previewHeader" class="text-lg font-semibold mb-3 hidden">সিলেক্ট করা পেজসমূহ (<span id="selectedCount">0</span>/20):</div>
-        <div id="previewGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+        <div id="previewGrid" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"></div>
+
+        <!-- Extracted Text Result & Editor Section -->
+        <div id="resultContainer" class="bg-white rounded-xl shadow-lg p-6 mb-8 hidden">
+            <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                <h3 class="text-lg font-bold text-gray-800">এক্সট্র্যাক্ট হওয়া টেক্সট (প্রয়োজনে এডিট করুন):</h3>
+                <div class="flex gap-2">
+                    <button id="copyBtn" class="bg-gray-100 border text-gray-700 px-3 py-1.5 rounded text-xs font-semibold hover:bg-gray-200">📋 কপি করুন</button>
+                    <button id="downloadPdfBtn" class="bg-green-600 text-white px-4 py-1.5 rounded text-xs font-semibold hover:bg-green-700">📥 PDF ডাউনলোড করুন</button>
+                </div>
+            </div>
+            <textarea id="extractedTextArea" rows="12" class="w-full p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-base text-gray-800 leading-relaxed bangla-font"></textarea>
+        </div>
+
+        <!-- Hidden printable area attached to DOM for rendering lossless Bangla PDF -->
+        <div id="pdfRenderArea" class="bg-white p-8 bangla-font hidden" style="width: 750px; text-align: left; white-space: pre-wrap; word-break: break-word; font-size: 15px; line-height: 1.8; color: #111827;"></div>
 
     </main>
 
@@ -80,53 +100,47 @@
         const MAX_FILES = 20;
         let selectedFiles = [];
 
-        // DOM elements
+        // DOM Elements
         const dropZone = document.getElementById('dropZone');
         const imageInput = document.getElementById('imageInput');
         const previewGrid = document.getElementById('previewGrid');
         const previewHeader = document.getElementById('previewHeader');
         const selectedCount = document.getElementById('selectedCount');
-        const generatePdfBtn = document.getElementById('generatePdfBtn');
+        const extractBtn = document.getElementById('extractBtn');
         const clearBtn = document.getElementById('clearBtn');
-        const pdfMode = document.getElementById('pdfMode');
         const progressContainer = document.getElementById('progressContainer');
         const progressBar = document.getElementById('progressBar');
         const progressText = document.getElementById('progressText');
         const progressPercent = document.getElementById('progressPercent');
+        const resultContainer = document.getElementById('resultContainer');
+        const extractedTextArea = document.getElementById('extractedTextArea');
+        const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+        const copyBtn = document.getElementById('copyBtn');
+        const pdfRenderArea = document.getElementById('pdfRenderArea');
 
-        // Drag and Drop handlers
+        // Drag and Drop
         dropZone.addEventListener('click', () => imageInput.click());
-        
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                dropZone.classList.add('drag-over');
-            });
+
+        ['dragenter', 'dragover'].forEach(name => {
+            dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
         });
 
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, (e) => {
-                e.preventDefault();
-                dropZone.classList.remove('drag-over');
-            });
+        ['dragleave', 'drop'].forEach(name => {
+            dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.remove('drag-over'); });
         });
 
         dropZone.addEventListener('drop', (e) => {
-            const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
+            const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
             handleFiles(files);
         });
 
-        imageInput.addEventListener('change', (e) => {
-            const files = Array.from(e.target.files);
-            handleFiles(files);
-        });
+        imageInput.addEventListener('change', (e) => handleFiles(Array.from(e.target.files)));
 
         function handleFiles(files) {
             if (selectedFiles.length + files.length > MAX_FILES) {
                 alert(`আপনি সর্বোচ্চ ${MAX_FILES} টি ছবি সিলেক্ট করতে পারবেন!`);
                 files = files.slice(0, MAX_FILES - selectedFiles.length);
             }
-
             selectedFiles = [...selectedFiles, ...files];
             updatePreview();
         }
@@ -138,24 +152,24 @@
             if (selectedFiles.length > 0) {
                 previewHeader.classList.remove('hidden');
                 clearBtn.classList.remove('hidden');
-                generatePdfBtn.disabled = false;
-                generatePdfBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                extractBtn.disabled = false;
+                extractBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             } else {
                 previewHeader.classList.add('hidden');
                 clearBtn.classList.add('hidden');
-                generatePdfBtn.disabled = true;
-                generatePdfBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                extractBtn.disabled = true;
+                extractBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
 
             selectedFiles.forEach((file, index) => {
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const card = document.createElement('div');
-                    card.className = "relative bg-white p-2 rounded-lg shadow border group";
+                    card.className = "relative bg-white p-2 rounded-lg shadow border";
                     card.innerHTML = `
                         <img src="${e.target.result}" class="w-full h-32 object-cover rounded">
                         <span class="absolute top-3 left-3 bg-black bg-opacity-70 text-white text-xs px-2 py-0.5 rounded-full">Page ${index + 1}</span>
-                        <button onclick="removeImage(${index})" class="absolute top-3 right-3 bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs shadow hover:bg-red-700">✕</button>
+                        <button onclick="removeImage(${index})" class="absolute top-3 right-3 bg-red-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs hover:bg-red-700">✕</button>
                         <p class="text-xs text-gray-500 mt-1 truncate">${file.name}</p>
                     `;
                     previewGrid.appendChild(card);
@@ -172,69 +186,46 @@
         clearBtn.addEventListener('click', () => {
             selectedFiles = [];
             imageInput.value = '';
+            resultContainer.classList.add('hidden');
             updatePreview();
         });
 
-        // PDF Generation Logic
-        generatePdfBtn.addEventListener('click', async () => {
+        // OCR Engine Logic
+        extractBtn.addEventListener('click', async () => {
             if (selectedFiles.length === 0) return;
 
-            const mode = pdfMode.value;
             progressContainer.classList.remove('hidden');
-            generatePdfBtn.disabled = true;
+            resultContainer.classList.add('hidden');
+            extractBtn.disabled = true;
 
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('p', 'mm', 'a4');
+            let fullText = "";
 
-            if (mode === 'image') {
-                // Direct Image to PDF
-                for (let i = 0; i < selectedFiles.length; i++) {
-                    const percent = Math.round(((i + 1) / selectedFiles.length) * 100);
-                    updateProgress(percent, `পেজ ${i + 1}/${selectedFiles.length} প্রসেস করা হচ্ছে...`);
-
-                    const imgData = await fileToDataURL(selectedFiles[i]);
-                    const imgProps = await getImageProperties(imgData);
-
-                    const pdfWidth = pdf.internal.pageSize.getWidth();
-                    const pdfHeight = pdf.internal.pageSize.getHeight();
-
-                    // Calculate scaling to fit A4 page
-                    const ratio = Math.min(pdfWidth / imgProps.width, pdfHeight / imgProps.height);
-                    const width = imgProps.width * ratio;
-                    const height = imgProps.height * ratio;
-                    const x = (pdfWidth - width) / 2;
-                    const y = (pdfHeight - height) / 2;
-
-                    if (i > 0) pdf.addPage();
-                    pdf.addImage(imgData, 'JPEG', x, y, width, height);
-                }
-
-                pdf.save('Mashruba_PDF_Document.pdf');
-                finishProcessing();
-
-            } else if (mode === 'ocr') {
-                // Bangla + English OCR Text Extraction
+            try {
+                // Initialize Tesseract Engine with Bangla and English
+                updateProgress(5, "OCR ইঞ্জিন লোড হচ্ছে...");
                 const worker = await Tesseract.createWorker('ben+eng');
 
                 for (let i = 0; i < selectedFiles.length; i++) {
-                    const progressVal = Math.round(((i) / selectedFiles.length) * 100);
-                    updateProgress(progressVal, `পেজ ${i + 1}/${selectedFiles.length} থেকে বাংলা ও ইংরেজি টেক্সট পড়া হচ্ছে...`);
+                    const currentPercent = Math.round(((i + 1) / selectedFiles.length) * 100);
+                    updateProgress(currentPercent, `পেজ ${i + 1}/${selectedFiles.length} প্রসেস হচ্ছে...`);
 
                     const ret = await worker.recognize(selectedFiles[i]);
-                    const text = ret.data.text;
+                    const text = ret.data.text.trim();
 
-                    if (i > 0) pdf.addPage();
-                    
-                    // Format text for PDF page
-                    const splitText = pdf.splitTextToSize(text || "No readable text found.", 180);
-                    pdf.setFontSize(11);
-                    pdf.text(splitText, 15, 15);
+                    fullText += `--- Page ${i + 1} ---\n` + (text || "[লেখা শনাক্ত করা যায়নি]") + "\n\n";
                 }
 
                 await worker.terminate();
-                updateProgress(100, "PDF তৈরি সম্পন্ন হয়েছে!");
-                pdf.save('Mashruba_PDF_OCR_Document.pdf');
-                finishProcessing();
+
+                updateProgress(100, "সম্পন্ন হয়েছে!");
+                extractedTextArea.value = fullText;
+                resultContainer.classList.remove('hidden');
+
+            } catch (err) {
+                alert("সমস্যা হয়েছে: " + err.message);
+            } finally {
+                setTimeout(() => progressContainer.classList.add('hidden'), 1000);
+                extractBtn.disabled = false;
             }
         });
 
@@ -244,29 +235,41 @@
             progressText.textContent = statusText;
         }
 
-        function finishProcessing() {
-            setTimeout(() => {
-                progressContainer.classList.add('hidden');
-                generatePdfBtn.disabled = false;
-                progressBar.style.width = '0%';
-            }, 1500);
-        }
+        // Copy Text Function
+        copyBtn.addEventListener('click', () => {
+            extractedTextArea.select();
+            navigator.clipboard.writeText(extractedTextArea.value);
+            alert("টেক্সট কপি করা হয়েছে!");
+        });
 
-        function fileToDataURL(file) {
-            return new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target.result);
-                reader.readAsDataURL(file);
-            });
-        }
+        // Download Perfect Bangla PDF
+        downloadPdfBtn.addEventListener('click', async () => {
+            const content = extractedTextArea.value.trim();
+            if (!content) {
+                alert("ডাউনলোড করার জন্য কোনো লেখা নেই!");
+                return;
+            }
 
-        function getImageProperties(dataUrl) {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => resolve({ width: img.width, height: img.height });
-                img.src = dataUrl;
-            });
-        }
+            // Prepare text in render area
+            pdfRenderArea.innerText = content;
+            pdfRenderArea.classList.remove('hidden');
+
+            const opt = {
+                margin:       [12, 12, 12, 12],
+                filename:     'Mashruba_PDF_Document.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            try {
+                await html2pdf().set(opt).from(pdfRenderArea).save();
+            } catch (err) {
+                alert("PDF তৈরির সময় ভুল হয়েছে: " + err.message);
+            } finally {
+                pdfRenderArea.classList.add('hidden');
+            }
+        });
     </script>
 </body>
 </html>
